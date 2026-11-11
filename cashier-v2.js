@@ -122,7 +122,7 @@ const drawV2=()=>{
 };
 render=drawV2;
 function startWizard(mode,step='bill'){
- if(mode==='opening'){cashReady.opening=false}else{cashReady.closing=false;const form=document.getElementById('close-form');if(form)closeDraft={nextBase:Number(form.nextBase.value),note:form.note.value}}
+ if(mode==='opening'){cashReady.opening=false}else{cashReady.closing=false;const form=document.getElementById('close-form');if(form)closeDraft={nextBase:Number(form.elements.namedItem('nextBase').value),note:form.elements.namedItem('note').value}}
  ui.modal={kind:'cashcount',mode,step};render();
 }
 function closeWizard(){const m=ui.modal;if(m?.kind!=='cashcount')return;ui.modal=m.mode==='closing'?{kind:'close'}:null;render()}
