@@ -47,6 +47,7 @@ const amount=()=>w.eval('shiftExpected(activeShift())');
  click('[data-v2="counter-next"]');
  assert.ok(!get('#open-shift-form button[type=submit]').disabled);
  send('#open-shift-form');await wait(80);
+ if(!shift())console.log('DIAG_OPEN',JSON.stringify({toast:d.querySelector('#toast')?.textContent,ready:w.eval('cashReady.opening'),form:!!d.querySelector('#open-shift-form'),shifts:state().shifts,fatal}));
  assert.ok(shift(),'Caja abierta');
  assert.equal(shift().base,4500);
  assert.equal(shift().operator,'Responsable prueba');
