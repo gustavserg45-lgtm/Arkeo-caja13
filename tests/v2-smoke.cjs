@@ -21,7 +21,10 @@ process.on('unhandledRejection',e=>fatal.push(String(e)));
 const get=s=>{const x=d.querySelector(s);assert.ok(x,'Elemento ausente: '+s);return x};
 const set=(s,v)=>{const e=get(s);e.value=v;e.dispatchEvent(new w.Event('input',{bubbles:true}));return e};
 const click=s=>get(s).click();
-const send=s=>{const e=get(s);e.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}))};
+const send=s=>{const e=get(s);
+  // jsdom no expone los inputs por form.campo como sí hacen los navegadores.
+  for(const el of e.elements){if(el.name&&!(el.name in e))Object.defineProperty(e,el.name,{get:()=>el,configurable:true})}
+  e.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}))};
 const wait=async(n=180)=>new Promise(r=>setTimeout(r,n));
 const state=()=>w.eval('state');
 const shift=()=>w.eval('activeShift()');
