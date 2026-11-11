@@ -1,0 +1,30 @@
+name: Probar Arqueo Express v2
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'cashier-v2.js'
+      - 'index.html'
+      - 'tests/**'
+      - '.github/workflows/test-v2.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar JavaScript
+        run: |
+          node --check app.js
+          node --check cashier-v2.js
+          node --check tests/v2-smoke.cjs
+      - name: Instalar DOM de pruebas
+        run: npm install --no-save --no-package-lock jsdom@26
+      - name: Ejecutar flujo real simulado
+        run: node tests/v2-smoke.cjs
