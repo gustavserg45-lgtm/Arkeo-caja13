@@ -87,17 +87,17 @@ openShift=function(form){
  if(!cashReady.opening)return toast('Primero confirma el conteo de billetes y monedas.','error');
  try{const counts=readDenominationCounts(form),base=denominationTotal(counts);
   const operator=operatorName();if(!operator)return toast('Inicia sesión con tu PIN.','error');
-  const ok=commit(()=>state.shifts.push({id:uid(),openedAt:new Date().toISOString(),operator,operatorId:currentOperator.id,base,baseDenominations:counts,openNote:form.note.value.trim(),status:'open'}),'Caja abierta. Ahora puedes registrar cobros y pagos.');
+  const ok=commit(()=>state.shifts.push({id:uid(),openedAt:new Date().toISOString(),operator,operatorId:currentOperator.id,base,baseDenominations:counts,openNote:form.elements.namedItem('note').value.trim(),status:'open'}),'Caja abierta. Ahora puedes registrar cobros y pagos.');
   if(ok){cashReady.opening=false;ui.openingDenoms={};ui.page='inicio';render();}
  }catch(e){toast(e.message,'error')}
 };
 closeShift=function(form){
  const s=activeShift();if(!s)return;
  if(!cashReady.closing)return toast('Primero confirma el conteo de billetes y monedas.','error');
- try{const counts=readDenominationCounts(form),counted=denominationTotal(counts),nextBase=Number(form.nextBase.value);
+ try{const counts=readDenominationCounts(form),counted=denominationTotal(counts),nextBase=Number(form.elements.namedItem('nextBase').value);
   if(!Number.isSafeInteger(nextBase)||nextBase<0||nextBase>counted)throw Error('La base debe ser un entero entre $0 y el dinero contado.');
   const expected=shiftExpected(s);
-  const ok=commit(()=>Object.assign(s,{status:'closed',closedAt:new Date().toISOString(),closedById:currentOperator.id,closedBy:operatorName(),counted,countedDenominations:counts,nextBase,difference:counted-expected,expected,withdrawal:counted-nextBase,note:form.note.value.trim()}),'Caja cerrada. Diferencia: '+fmt(counted-expected));
+  const ok=commit(()=>Object.assign(s,{status:'closed',closedAt:new Date().toISOString(),closedById:currentOperator.id,closedBy:operatorName(),counted,countedDenominations:counts,nextBase,difference:counted-expected,expected,withdrawal:counted-nextBase,note:form.elements.namedItem('note').value.trim()}),'Caja cerrada. Diferencia: '+fmt(counted-expected));
   if(ok){cashReady.closing=false;ui.closingDenoms={};closeDraft={nextBase:null,note:''};ui.modal={kind:'shift',id:s.id};ui.page='caja';render();}
  }catch(e){toast(e.message,'error')}
 };
