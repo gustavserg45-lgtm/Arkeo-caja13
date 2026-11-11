@@ -2,11 +2,14 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const {webcrypto}=require('node:crypto');
+const {TextEncoder,TextDecoder}=require('node:util');
 const {JSDOM}=require('jsdom');
 const html=fs.readFileSync('index.html','utf8');
 const dom=new JSDOM(html,{url:'https://example.test/Arkeo-caja13/',runScripts:'dangerously',pretendToBeVisual:true});
 const w=dom.window,d=w.document;
 Object.defineProperty(w,'crypto',{configurable:true,value:webcrypto});
+w.TextEncoder=TextEncoder;
+w.TextDecoder=TextDecoder;
 w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});
 w.scrollTo=()=>{};
 w.confirm=()=>true;
