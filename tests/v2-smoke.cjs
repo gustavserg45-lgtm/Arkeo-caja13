@@ -30,6 +30,7 @@ const amount=()=>w.eval('shiftExpected(activeShift())');
  set('#pin-code','123456');
  set('#pin-repeat','123456');
  send('#pin-setup-form');await wait(500);
+ if(!state().auth)console.log('DIAG',JSON.stringify({toast:d.querySelector('#toast')?.textContent,fatal,form:!!d.querySelector('#pin-setup-form'),crypto:!!w.crypto?.subtle,keys:Object.keys(state())}));
  assert.equal(state().auth.operators.length,1,'Debe existir administrador');
  assert.equal(state().auth.operators[0].hash.includes('123456'),false,'No guardar PIN legible');
  assert.ok(get('#open-shift-form'),'Pantalla de abrir turno tras configurar PIN');
