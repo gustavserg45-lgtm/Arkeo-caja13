@@ -22,6 +22,37 @@ const authShell=(kind)=>{let setup=kind==='setup';return '<div class="pin-screen
 const countValue=(mode)=>denominationTotal(mode==='opening'?ui.openingDenoms:ui.closingDenoms);
 const countPcs=(mode)=>sum(Object.values(mode==='opening'?ui.openingDenoms:ui.closingDenoms),num);
 const countHidden=mode=>CASH_DENOMS.map(d=>'<input type="hidden" name="denom_'+d.key+'" value="'+num((mode==='opening'?ui.openingDenoms:ui.closingDenoms)[d.key])+'">').join('');
+const closeMoney=(movements,predicate)=>sum(movements.filter(m=>m.method==='efectivo'&&predicate(m)),m=>num(m.amount));
+function closeBreakdown(shift,counted=0){
+ const movements=shiftMovements(shift.id);
+ const inCash=m=>m.direction==='in'&&m.method==='efectivo';
+ const outCash=m=>m.direction==='out'&&m.method==='efectivo';
+ const category=(name)=>m=>m.category===name;
+ const cashSales=closeMoney(movements,m=>inCash(m)&&category('venta')(m));
+ const creditCollections=closeMoney(movements,m=>inCash(m)&&category('abono_cliente')(m));
+ const internalTransfers=closeMoney(movements,m=>inCash(m)&&(category('ingreso_caja')(m)||category('retiro')(m)))
+   -closeMoney(movements,m=>outCash(m)&&(category('ingreso_caja')(m)||category('retiro')(m)));
+ const otherIncome=closeMoney(movements,m=>inCash(m)&&!['venta','abono_cliente','ingreso_caja'].includes(m.category));
+ const expenses=closeMoney(movements,m=>outCash(m)&&['gasto','nomina','anticipo','nomina_otro','egreso_otro','reverso'].includes(m.category));
+ const purchases=closeMoney(movements,m=>outCash(m)&&category('compra')(m));
+ const supplierPayments=closeMoney(movements,m=>outCash(m)&&['abono_proveedor','pago_proveedor_directo'].includes(m.category));
+ const refunds=closeMoney(movements,m=>outCash(m)&&category('devolucion_cliente')(m));
+ const electronicIn=sum(movements.filter(m=>m.direction==='in'&&m.method!=='efectivo'),m=>num(m.amount));
+ const electronicOut=sum(movements.filter(m=>m.direction==='out'&&m.method!=='efectivo'),m=>num(m.amount));
+ const values={base_initial:num(shift.base),cash_sales:cashSales,credit_collections:creditCollections,other_income:otherIncome,expenses,purchases,supplier_payments:supplierPayments,refunds,internal_transfers,cash_counted:num(counted)};
+ const calculate=typeof calculateCashReconciliation==='function'?calculateCashReconciliation:(input=>({expected_cash:input.base_initial+input.cash_sales+input.credit_collections+input.other_income-input.expenses-input.purchases-input.supplier_payments-input.refunds+input.internal_transfers,cash_difference:input.cash_counted-(input.base_initial+input.cash_sales+input.credit_collections+input.other_income-input.expenses-input.purchases-input.supplier_payments-input.refunds+input.internal_transfers)}));
+ const result=calculate(values);
+ return {...values,...result,electronic_in:electronicIn,electronic_out:electronicOut};
+}
+function closeLine(label,value,detail=''){return '<div class="v2-close-line"><span>'+label+(detail?'<small>'+detail+'</small>':'')+'</span><b>'+fmt(value)+'</b></div>'}
+function syncState(){
+ const status=state.sync?.status;
+ if(status==='synced')return {key:'synced',label:'Sincronizado',detail:'Última confirmación del servidor registrada.'};
+ if(status==='error')return {key:'error',label:'Error de sincronización',detail:'El registro local sigue conservado.'};
+ if(status==='pending')return {key:'pending',label:'Pendiente de sincronización',detail:'Guardado localmente; aún no hay confirmación del servidor.'};
+ return {key:'pending',label:'Pendiente de sincronización',detail:'Modo local: el backend todavía no está conectado.'};
+}
+function syncBadge(){const s=syncState();return '<div class="v2-sync-status '+s.key+'" role="status"><span class="v2-sync-dot"></span><span><b>'+s.label+'</b><small>'+s.detail+'</small></span></div>'}
 function countTile(mode,type,heading,helper){const counts=mode==='opening'?ui.openingDenoms:ui.closingDenoms;const amount=CASH_DENOMS.filter(d=>d.type===type).reduce((s,d)=>s+d.value*num(counts[d.key]),0);const pcs=CASH_DENOMS.filter(d=>d.type===type).reduce((s,d)=>s+num(counts[d.key]),0);return '<button type="button" class="v2-count-tile" data-v2="count-start" data-mode="'+mode+'" data-step="'+type+'"><span class="v2-tile-icon '+type+'">'+icon(type==='bill'?'receipt':'coin')+'</span><span class="v2-tile-text"><b>'+heading+'</b><small>'+helper+'</small><strong>'+fmt(amount)+' <span>· '+pcs+' piezas</span></strong></span><span class="v2-chevron">'+icon('chevron')+'</span></button>'}
 renderCash=function(){
  const s=activeShift();if(s)return oldCash();
@@ -40,7 +71,7 @@ renderDashboard=function(){
  const cash=shiftExpected(s),movs=shiftMovements(s.id).slice(-4).reverse();
  const tile=(title,desc,pg,tab,ic,primary=false)=>'<button type="button" class="v2-action '+(primary?'prominent':'')+'" data-action="quick" data-page-target="'+pg+'" '+(tab?'data-tab="'+tab+'"':'')+'>'+icon(ic)+'<span><b>'+title+'</b><small>'+desc+'</small></span>'+icon('chevron')+'</button>';
  return pageTitle('Mi caja','Elige una operación para comenzar.')+
- '<div class="v2-cash-hero"><div><div class="v2-hero-label">'+icon('check')+' TURNO ABIERTO · '+esc(s.operator)+'</div><small>Efectivo estimado en gaveta</small><strong>'+fmt(cash)+'</strong><span>Base '+fmt(s.base)+' · Abierta '+esc(dt(s.openedAt))+'</span></div><button type="button" data-action="goto-caja" class="v2-hero-link">Ver caja '+icon('arrow')+'</button></div>'+
+  '<div class="v2-cash-hero"><div><div class="v2-hero-label">'+icon('check')+' TURNO ABIERTO · '+esc(s.operator)+'</div><small>Efectivo estimado en gaveta</small><strong>'+fmt(cash)+'</strong><span>Base '+fmt(s.base)+' · Abierta '+esc(dt(s.openedAt))+'</span></div><button type="button" data-action="goto-caja" class="v2-hero-link">Ver caja '+icon('arrow')+'</button></div>'+syncBadge()+
  '<section class="v2-action-panel"><div class="v2-section-head"><h2>¿Qué vas a hacer?</h2><p>Accesos directos a tus operaciones diarias.</p></div><div class="v2-action-grid">'+
  tile('Cobrar una venta','Efectivo, transferencia, tarjeta o crédito','registrar','venta','receipt',true)+
  tile('Registrar una salida','Gasto, retiro o pago realizado','registrar','gasto','minus')+
@@ -73,14 +104,17 @@ renderModal=function(){
  if(ui.modal.kind==='cashcount')return wizardBody(ui.modal.mode,ui.modal.step);
  if(ui.modal.kind!=='close')return oldModal();
  const s=activeShift();if(!s)return '';
- const expected=shiftExpected(s),counted=countValue('closing'),difference=counted-expected;
+ const counted=countValue('closing'),breakdown=closeBreakdown(s,counted),expected=breakdown.expected_cash,difference=breakdown.cash_difference;
  const suggest=Math.min(s.base,Math.max(0,counted));
  const nextBase=closeDraft.nextBase===null?suggest:closeDraft.nextBase;
- return '<div class="modal-cover v2-close-cover"><div class="modal v2-close-modal" role="dialog" aria-modal="true" aria-label="Cerrar caja"><div class="modal-head"><div><span class="v2-eyebrow">CIERRE DEL TURNO</span><h2>Cuenta y entrega la caja</h2></div><button type="button" class="modal-x" data-action="close-modal" aria-label="Cerrar">'+icon('close')+'</button></div><div class="modal-content"><form id="close-form"><div class="v2-close-summary"><span>Efectivo esperado</span><strong>'+fmt(expected)+'</strong></div><p class="v2-muted">Cuenta físicamente las piezas antes de retirar dinero. Completa los dos pasos.</p>'+
- '<div class="v2-count-tiles">'+countTile('closing','bill','Billetes','Registrar cantidades')+countTile('closing','coin','Monedas','Registrar cantidades')+'</div>'+
- '<div class="v2-close-compare"><div><small>CONTADO</small><b>'+fmt(counted)+'</b></div><div><small>DIFERENCIA</small><b class="'+(difference?'v2-alert':'v2-match')+'">'+(cashReady.closing?fmt(difference):'Por contar')+'</b></div></div>'+
- '<div class="field"><label for="v2-next-base">Base para el próximo turno (COP)</label><input type="number" id="v2-next-base" name="nextBase" inputmode="numeric" step="1" min="0" max="'+counted+'" value="'+nextBase+'" required></div><div class="field"><label for="v2-close-note">Novedades (opcional)</label><textarea id="v2-close-note" name="note" rows="2" placeholder="Observaciones del cierre">'+esc(closeDraft.note)+'</textarea></div>'+countHidden('closing')+
- '<div class="v2-close-actions"><button class="btn" type="button" data-action="close-modal">Volver</button><button class="btn primary" type="submit" '+(!cashReady.closing?'disabled':'')+'>'+icon('check')+' Confirmar cierre</button></div></form></div></div></div>';
+ return '<div class="modal-cover v2-close-cover"><div class="modal v2-close-modal" role="dialog" aria-modal="true" aria-label="Cerrar caja"><div class="modal-head"><div><span class="v2-eyebrow">CIERRE DEL TURNO</span><h2>Cuenta y concilia la caja</h2></div><button type="button" class="modal-x" data-action="close-modal" aria-label="Cerrar">'+icon('close')+'</button></div><div class="modal-content"><form id="close-form">'+syncBadge()+'<div class="v2-close-summary"><span>Efectivo esperado</span><strong>'+fmt(expected)+'</strong></div><p class="v2-muted">La máquina y los medios electrónicos se revisan aparte. Aquí se calcula únicamente el efectivo físico.</p>'+
+  '<div class="v2-close-breakdown"><div class="v2-close-breakdown-head"><div><b>Resumen del turno</b><small>Movimientos en efectivo registrados</small></div><span class="v2-state ok">'+shiftMovements(s.id).length+' movimientos</span></div>'+
+  closeLine('Base inicial',breakdown.base_initial)+closeLine('Ventas en efectivo',breakdown.cash_sales)+closeLine('Cobros de créditos anteriores',breakdown.credit_collections)+closeLine('Otros ingresos',breakdown.other_income)+closeLine('Gastos',breakdown.expenses)+closeLine('Compras',breakdown.purchases)+closeLine('Pagos a proveedores',breakdown.supplier_payments)+closeLine('Devoluciones',breakdown.refunds)+'</div>'+
+  '<div class="v2-close-electronic"><div><b>Medios electrónicos separados</b><small>No modifican el efectivo de la gaveta.</small></div><div class="v2-electronic-grid">'+closeLine('Entradas electrónicas',breakdown.electronic_in)+closeLine('Salidas electrónicas',breakdown.electronic_out)+'</div></div>'+
+  '<div class="v2-count-tiles">'+countTile('closing','bill','Billetes','Registrar cantidades')+countTile('closing','coin','Monedas','Registrar cantidades')+'</div>'+
+  '<div class="v2-close-compare"><div><small>CONTADO</small><b>'+fmt(counted)+'</b></div><div><small>DIFERENCIA</small><b class="'+(difference?'v2-alert':'v2-match')+'">'+(cashReady.closing?fmt(difference):'Por contar')+'</b></div></div>'+
+  '<div class="field"><label for="v2-next-base">Base para el próximo turno (COP)</label><input type="number" id="v2-next-base" name="nextBase" inputmode="numeric" step="1" min="0" max="'+counted+'" value="'+nextBase+'" required></div><div class="field"><label for="v2-close-note">Novedades (opcional)</label><textarea id="v2-close-note" name="note" rows="2" placeholder="Observaciones del cierre">'+esc(closeDraft.note)+'</textarea></div>'+countHidden('closing')+
+  '<div class="v2-close-actions"><button class="btn" type="button" data-action="close-modal">Volver</button><button class="btn primary" type="submit" '+(!cashReady.closing?'disabled':'')+'>'+icon('check')+' Confirmar cierre</button></div></form></div></div></div>';
 };
 openShift=function(form){
  if(activeShift())return toast('Ya tienes un turno activo.','error');
@@ -96,8 +130,8 @@ closeShift=function(form){
  if(!cashReady.closing)return toast('Primero confirma el conteo de billetes y monedas.','error');
  try{const counts=readDenominationCounts(form),counted=denominationTotal(counts),nextBase=Number(form.elements.namedItem('nextBase').value);
   if(!Number.isSafeInteger(nextBase)||nextBase<0||nextBase>counted)throw Error('La base debe ser un entero entre $0 y el dinero contado.');
-  const expected=shiftExpected(s);
-  const ok=commit(()=>Object.assign(s,{status:'closed',closedAt:new Date().toISOString(),closedById:currentOperator.id,closedBy:operatorName(),counted,countedDenominations:counts,nextBase,difference:counted-expected,expected,withdrawal:counted-nextBase,note:form.elements.namedItem('note').value.trim()}),'Caja cerrada. Diferencia: '+fmt(counted-expected));
+   const reconciliation=closeBreakdown(s,counted),expected=reconciliation.expected_cash,difference=reconciliation.cash_difference;
+   const ok=commit(()=>Object.assign(s,{status:'closed',closedAt:new Date().toISOString(),closedById:currentOperator.id,closedBy:operatorName(),counted,countedDenominations:counts,nextBase,difference,expected,withdrawal:counted-nextBase,reconciliation,note:form.elements.namedItem('note').value.trim()}),'Caja cerrada. Diferencia: '+fmt(difference));
   if(ok){cashReady.closing=false;ui.closingDenoms={};closeDraft={nextBase:null,note:''};ui.modal={kind:'shift',id:s.id};ui.page='caja';render();}
  }catch(e){toast(e.message,'error')}
 };

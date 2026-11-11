@@ -2,7 +2,7 @@
 const CACHE_NAME = 'arqueo-express-static-v2.0.0';
 const CORE_ASSETS = [
   './', './index.html', './app.js', './styles.css', './cashier.css',
-  './icon.svg', './manifest.webmanifest', './cashier-v2.js', './cashier-v2.css'
+  './icon.svg', './manifest.webmanifest', './reconciliation.js', './cashier-v2.js', './cashier-v2.css'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME)

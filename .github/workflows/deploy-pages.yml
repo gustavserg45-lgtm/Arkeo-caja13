@@ -30,7 +30,7 @@ jobs:
       - name: Preparar sitio estatico
         run: |
           mkdir -p _site
-          cp index.html app.js styles.css cashier.css sw.js icon.svg manifest.webmanifest .nojekyll _site/
+          cp "arqueo de caja/index.html" "arqueo de caja/app.js" "arqueo de caja/reconciliation.js" "arqueo de caja/styles.css" "arqueo de caja/cashier.css" "arqueo de caja/cashier-v2.js" "arqueo de caja/cashier-v2.css" "arqueo de caja/sw.js" "arqueo de caja/icon.svg" "arqueo de caja/manifest.webmanifest" "arqueo de caja/.nojekyll" _site/
       - name: Subir archivos del sitio
         uses: actions/upload-pages-artifact@v4
         with:

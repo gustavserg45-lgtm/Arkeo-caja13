@@ -1,0 +1,10 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '..');
+const sql = fs.readFileSync(path.join(root, 'migrations', '0001_foundation.sql'), 'utf8');
+const worker = fs.readFileSync(path.join(root, 'src', 'index.js'), 'utf8');
+for (const table of ['businesses','branches','cash_registers','users','roles','shifts','movements','payment_parts','credit_documents','allocations','receipts','attachments','verifications','reversals','audit_events','sync_operations']) assert.match(sql, new RegExp(`CREATE TABLE IF NOT EXISTS ${table}\\b`));
+for (const invariant of ['amount_cop INTEGER NOT NULL CHECK (amount_cop > 0)', 'UNIQUE (business_id, idempotency_key)', 'cash_amount_cop INTEGER NOT NULL DEFAULT 0']) assert.match(sql, new RegExp(invariant.replace(/[()]/g, '\\$&')));
+assert.match(worker, /\/health/); assert.match(worker, /\/api\/movements/); assert.match(worker, /idempotency_conflict/); assert.match(worker, /database_not_configured/);
+console.log('PASS: backend foundation contract');

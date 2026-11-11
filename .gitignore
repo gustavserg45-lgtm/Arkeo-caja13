@@ -1,4 +1,5 @@
 # Archivos locales y privados
+.codex-remote-attachments/
 .DS_Store
 Thumbs.db
 node_modules/
