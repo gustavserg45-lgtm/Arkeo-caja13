@@ -39,7 +39,7 @@ function closeBreakdown(shift,counted=0){
  const refunds=closeMoney(movements,m=>outCash(m)&&category('devolucion_cliente')(m));
  const electronicIn=sum(movements.filter(m=>m.direction==='in'&&m.method!=='efectivo'),m=>num(m.amount));
  const electronicOut=sum(movements.filter(m=>m.direction==='out'&&m.method!=='efectivo'),m=>num(m.amount));
- const values={base_initial:num(shift.base),cash_sales:cashSales,credit_collections:creditCollections,other_income:otherIncome,expenses,purchases,supplier_payments:supplierPayments,refunds,internal_transfers,cash_counted:num(counted)};
+  const values={base_initial:num(shift.base),cash_sales:cashSales,credit_collections:creditCollections,other_income:otherIncome,expenses,purchases,supplier_payments:supplierPayments,refunds,internal_transfers:internalTransfers,cash_counted:num(counted)};
  const calculate=typeof calculateCashReconciliation==='function'?calculateCashReconciliation:(input=>({expected_cash:input.base_initial+input.cash_sales+input.credit_collections+input.other_income-input.expenses-input.purchases-input.supplier_payments-input.refunds+input.internal_transfers,cash_difference:input.cash_counted-(input.base_initial+input.cash_sales+input.credit_collections+input.other_income-input.expenses-input.purchases-input.supplier_payments-input.refunds+input.internal_transfers)}));
  const result=calculate(values);
  return {...values,...result,electronic_in:electronicIn,electronic_out:electronicOut};
