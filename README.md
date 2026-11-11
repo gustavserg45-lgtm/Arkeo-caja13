@@ -2,6 +2,12 @@
 
 Microaplicación PWA para abrir la caja, contar monedas y billetes colombianos, registrar ventas/compras, abonos a clientes/proveedores, gastos, adelantos y nómina, y realizar el cierre de turno. Diseño responsivo para teléfono, tableta y computador. No requiere backend ni suscripción.
 
+## Repositorio y vista web
+
+- [Código en GitHub](https://github.com/gustavserg45-lgtm/Arkeo-caja13)
+- [Vista en GitHub Pages](https://gustavserg45-lgtm.github.io/Arkeo-caja13/) (disponible después de activar Pages)
+- [Instrucciones específicas de publicación](COMO-PUBLICAR.md)
+
 ## Ver en GitHub Pages
 
 Consulta [COMO-PUBLICAR.md](COMO-PUBLICAR.md) para publicar gratis desde un repositorio **público** con `main` y `/ (root)`. En GitHub Pages no hace falta instalar dependencias ni ejecutar compilaciones. Los cambios al código aparecen después del siguiente despliegue, no mientras se está editando.
