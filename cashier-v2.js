@@ -149,7 +149,7 @@ function changeWizardStep(direction){
 }
 async function addOperator(form){
  if(!isManager())return;
- const name=form.name.value.trim(),pin=pinText(form.pin.value);
+ const name=form.elements.namedItem('name').value.trim(),pin=pinText(form.elements.namedItem('pin').value);
  if(name.length<2||name.length>80)throw Error('Escribe el nombre del cajero.');
  if(!validPin(pin))throw Error('Usa un PIN de 4 a 6 dígitos.');
  if(pinData().some(o=>o.name.toLowerCase()===name.toLowerCase()))throw Error('Ya existe un cajero con ese nombre.');
@@ -169,7 +169,7 @@ document.addEventListener('click',e=>{
  if(action==='counter-back'){changeWizardStep(-1);return}
  if(action==='counter-change'){const row=el.closest('.v2-denom-card'),input=row?.querySelector('input');if(!input)return;const v=Math.max(0,Math.min(100000,num(input.value)+Number(el.dataset.delta)));input.value=v||'';updateWizardCard(input);return}
  if(action==='operator-toggle'&&isManager()){const op=pinData().find(x=>x.id===el.dataset.id);if(op&&op.role==='cashier'){commit(()=>op.active=!validOperator(op),op.active?'Acceso habilitado.':'Acceso actualizado.')}return}
- if(action==='operator-pin'&&isManager()){const op=pinData().find(x=>x.id===el.dataset.id);if(!op)return;const a=prompt('Nuevo PIN para '+op.name+' (4 a 6 números):');if(a===null)return;const pin=pinText(a);if(!validPin(pin,op.role==='admin'))return toast('PIN inválido. Para administrador se requieren 6 dígitos.','error');derivePin(pin,op.salt=randBytes()).then(hash=>commit(()=>op.hash=hash,'PIN cambiado.')).catch(e=>toast(e.message,'error'));return}
+ if(action==='operator-pin'&&isManager()){const op=pinData().find(x=>x.id===el.dataset.id);if(!op)return;const a=prompt('Nuevo PIN para '+op.name+' (4 a 6 números):');if(a===null)return;const pin=pinText(a);if(!validPin(pin,op.role==='admin'))return toast('PIN inválido. Para administrador se requieren 6 dígitos.','error');(async()=>{const salt=randBytes();const hash=await derivePin(pin,salt);commit(()=>{op.hash=hash;op.salt=salt},'PIN cambiado.')})().catch(e=>toast(e.message,'error'));return}
 },true);
 document.addEventListener('input',e=>{if(!e.target.matches('.v2-wizard [name^="counter_"]'))return;updateWizardCard(e.target)},true);
 document.addEventListener('submit',async e=>{
