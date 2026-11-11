@@ -1,0 +1,1 @@
+{"name":"Arqueo Express","short_name":"Arqueo","description":"Apertura de caja por monedas y billetes, cobros, gastos y cierre de turnos","start_url":"./","scope":"./","display":"standalone","background_color":"#f4f6fa","theme_color":"#142544","icons":[{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}

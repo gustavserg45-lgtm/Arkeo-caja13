@@ -1,0 +1,10 @@
+# Archivos locales y privados
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+.env.*
+*.log
+*.zip
+backups/
+respaldo*.json
