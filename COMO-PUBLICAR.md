@@ -2,22 +2,26 @@
 
 Repositorio: https://github.com/gustavserg45-lgtm/Arkeo-caja13
 
-## Antes de publicar
-El repositorio está configurado como **privado**. Con GitHub Free, Pages requiere que el repositorio sea **público**. El cambio de visibilidad revela el código fuente y el historial del repositorio; revisa que no haya datos privados antes de hacerlo.
+## Estado verificado el 11 de noviembre de 2026
 
-## Pasos
-1. Abre https://github.com/gustavserg45-lgtm/Arkeo-caja13/settings
-2. En **General → Danger Zone → Change repository visibility**, cambia a **Public** si quieres usar GitHub Pages con plan gratuito.
-3. Abre https://github.com/gustavserg45-lgtm/Arkeo-caja13/settings/pages
-4. En **Build and deployment**, elige **Deploy from a branch**.
-5. Selecciona **main** y **/(root)**. Guarda.
-6. Cuando GitHub termine de publicar, abre:
-   https://gustavserg45-lgtm.github.io/Arkeo-caja13/
+- Repositorio público con la aplicación completa en `main`.
+- Despliegue automatizado preparado en `.github/workflows/deploy-pages.yml`.
+- El primer despliegue falló al ejecutar `actions/configure-pages` porque **GitHub Pages todavía no está habilitado** para este repositorio. No es un error del código de Arqueo Express.
+- Registro del intento: https://github.com/gustavserg45-lgtm/Arkeo-caja13/actions/runs/42974394944
 
-No necesitas instalar Node.js ni ejecutar compilaciones: `index.html` y todos sus recursos están en la raíz de `main`.
+## Habilitar la publicación (acción del propietario)
 
-### Seguridad y funcionamiento
-- Cada navegador mantiene su propia información en almacenamiento local. No hay sincronización entre cajeros ni dispositivos.
-- La app solo registra medios de pago; no transfiere dinero ni emite facturas DIAN.
-- No guardes datos de clientes ni respaldos financieros en el repositorio público.
-- Haz respaldos JSON desde la aplicación antes de borrar datos del navegador.
+1. Abre https://github.com/gustavserg45-lgtm/Arkeo-caja13/settings/pages
+2. En **Build and deployment → Source**, selecciona **GitHub Actions** (NO "Deploy from a branch").
+3. Abre https://github.com/gustavserg45-lgtm/Arkeo-caja13/actions/workflows/deploy-pages.yml
+4. Selecciona **Run workflow → Branch: main → Run workflow**. Alternativamente, vuelve a ejecutar el flujo fallido.
+5. Comprueba el resultado del flujo. Si está en verde, abre https://gustavserg45-lgtm.github.io/Arkeo-caja13/
+
+No necesitas compilar manualmente: el flujo sube `index.html`, `app.js`, hojas CSS y recursos PWA a GitHub Pages automáticamente cada vez que cambia `main`.
+
+## Advertencias
+
+- Los movimientos se almacenan únicamente en el navegador, por dispositivo; no existe sincronización entre cajeros.
+- La aplicación no transfiere dinero ni emite facturación electrónica de la DIAN.
+- No subas respaldos, clientes ni datos financieros reales al repositorio público.
+- Exporta respaldos JSON periódicamente desde Configuración.
