@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const {webcrypto}=require('node:crypto');
 const {JSDOM}=require('jsdom');
 const html=fs.readFileSync('index.html','utf8');
-const dom=new JSDOM(html,{url:'https://example.test/Arkeo-caja13/',runScripts:'outside-only',pretendToBeVisual:true});
+const dom=new JSDOM(html,{url:'https://example.test/Arkeo-caja13/',runScripts:'dangerously',pretendToBeVisual:true});
 const w=dom.window,d=w.document;
 Object.defineProperty(w,'crypto',{configurable:true,value:webcrypto});
 w.matchMedia=()=>({matches:false,addListener(){},removeListener(){}});
@@ -24,8 +24,7 @@ const state=()=>w.eval('state');
 const shift=()=>w.eval('activeShift()');
 const amount=()=>w.eval('shiftExpected(activeShift())');
 (async()=>{
- w.eval(fs.readFileSync('app.js','utf8'));
- w.eval(fs.readFileSync('cashier-v2.js','utf8'));
+ for(const file of ['app.js','cashier-v2.js']){const script=d.createElement('script');script.textContent=fs.readFileSync(file,'utf8');d.body.appendChild(script);script.remove();}
  assert.match(d.querySelector('#app').textContent,/Configura el acceso/);
  set('#setup-name','Responsable prueba');
  set('#pin-code','123456');
