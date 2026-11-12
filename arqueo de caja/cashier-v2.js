@@ -69,17 +69,25 @@ renderCash=function(){
 renderDashboard=function(){
  const s=activeShift();if(!s)return renderCash();
  const cash=shiftExpected(s),movs=shiftMovements(s.id).slice(-4).reverse();
- const tile=(title,desc,pg,tab,ic,primary=false)=>'<button type="button" class="v2-action '+(primary?'prominent':'')+'" data-action="quick" data-page-target="'+pg+'" '+(tab?'data-tab="'+tab+'"':'')+'>'+icon(ic)+'<span><b>'+title+'</b><small>'+desc+'</small></span>'+icon('chevron')+'</button>';
+ const action=(title,desc,pg,tab,ic,extra='')=>'<button type="button" class="v2-group-action" data-action="quick" data-page-target="'+pg+'" '+(tab?'data-tab="'+tab+'"':'')+' '+extra+'>'+icon(ic)+'<span><b>'+title+'</b><small>'+desc+'</small></span>'+icon('chevron')+'</button>';
+ const group=(kind,title,desc,items)=>'<section class="v2-operation-group '+kind+'"><div class="v2-group-heading"><span class="v2-group-icon">'+icon(kind==='in'?'plus':'minus')+'</span><div><h3>'+title+'</h3><p>'+desc+'</p></div></div><div class="v2-group-actions">'+items.join('')+'</div></section>';
  return pageTitle('Mi caja','Elige una operación para comenzar.')+
   '<div class="v2-cash-hero"><div><div class="v2-hero-label">'+icon('check')+' TURNO ABIERTO · '+esc(s.operator)+'</div><small>Efectivo estimado en gaveta</small><strong>'+fmt(cash)+'</strong><span>Base '+fmt(s.base)+' · Abierta '+esc(dt(s.openedAt))+'</span></div><button type="button" data-action="goto-caja" class="v2-hero-link">Ver caja '+icon('arrow')+'</button></div>'+syncBadge()+
- '<section class="v2-action-panel"><div class="v2-section-head"><h2>¿Qué vas a hacer?</h2><p>Accesos directos a tus operaciones diarias.</p></div><div class="v2-action-grid">'+
- tile('Cobrar una venta','Efectivo, transferencia, tarjeta o crédito','registrar','venta','receipt',true)+
- tile('Registrar una salida','Gasto, retiro o pago realizado','registrar','gasto','minus')+
- tile('Registrar un abono','Cobrar cartera o pagar al proveedor','cartera','','users')+
- tile('Registrar una compra','Contado o crédito a proveedor','registrar','compra','wallet')+
- '</div></section>'+
+  '<section class="v2-action-panel"><div class="v2-section-head"><h2>¿Qué vas a hacer?</h2><p>Primero elegí el movimiento; después te pedimos solo los datos necesarios.</p></div><div class="v2-operation-groups">'+
+  group('in','Recibir dinero','Todo lo que entra a la caja o se registra como cobro.',[
+   action('Cobrar una venta','Efectivo, transferencia, tarjeta o crédito','registrar','venta','receipt'),
+   action('Buscar una factura','Registrar un abono de cliente o proveedor','cartera','','users','data-page="cartera"')
+  ])+
+  group('out','Entregar dinero','Todo lo que sale de la caja o se registra como pago.',[
+   action('Pagar una compra','Contado o crédito a proveedor','registrar','compra','wallet'),
+   action('Registrar gasto o retiro','Gasto, nómina, devolución o traslado','registrar','gasto','minus')
+  ])+
+  '</div><div class="v2-secondary-actions">'+
+  '<button type="button" class="v2-secondary-action" data-action="goto-movimientos">'+icon('file-text')+'<span><b>Comprobantes</b><small>Buscar y revisar movimientos</small></span>'+icon('chevron')+'</button>'+ 
+  '<button type="button" class="v2-secondary-action" data-action="show-close">'+icon('wallet')+'<span><b>Cerrar y conciliar</b><small>Comparar ventas, pagos y efectivo</small></span>'+icon('chevron')+'</button>'+ 
+  '</div></section>'+
  '<div class="grid-2 v2-lower"><section class="panel"><div class="panel-head"><div><h2>Últimas operaciones</h2><p>Tu turno actual</p></div><button class="btn small" data-action="goto-movimientos">Ver todas</button></div>'+(movs.length?renderMovTable(movs,false):empty('Sin movimientos','Comienza con un cobro o un pago.','receipt'))+'</section>'+
- '<section class="panel"><div class="panel-head"><div><h2>Al terminar el turno</h2><p>Cierre y entrega de efectivo</p></div></div><div class="panel-body"><p class="v2-muted">Cuenta las denominaciones en dos pasos, compara el efectivo y deja registrada la base del próximo turno.</p><button type="button" class="btn full v2-close-link" data-action="show-close">'+icon('wallet')+' Contar y cerrar caja</button></div></section></div>';
+  '<section class="panel"><div class="panel-head"><div><h2>Estado del turno</h2><p>La conciliación se hace al finalizar</p></div></div><div class="panel-body"><p class="v2-muted">El sistema separa efectivo, transferencias y tarjetas para que el resultado sea fácil de revisar.</p><div class="v2-turn-tip">'+icon('check')+' <span><b>Caja activa</b><small>Los movimientos quedan asociados a este turno.</small></span></div></div></section></div>';
 };
 function wizardStepTitle(step){return step==='bill'?'Cuenta los billetes':step==='coin'?'Cuenta las monedas':'Revisa tu conteo'}
 function wizardBody(mode,step){
