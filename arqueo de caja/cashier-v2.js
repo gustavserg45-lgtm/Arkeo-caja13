@@ -69,7 +69,7 @@ renderCash=function(){
 renderDashboard=function(){
  const s=activeShift();if(!s)return renderCash();
  const cash=shiftExpected(s),movs=shiftMovements(s.id).slice(-4).reverse();
- const action=(title,desc,pg,tab,ic,extra='')=>'<button type="button" class="v2-group-action" data-action="quick" data-page-target="'+pg+'" '+(tab?'data-tab="'+tab+'"':'')+' '+extra+'>'+icon(ic)+'<span><b>'+title+'</b><small>'+desc+'</small></span>'+icon('chevron')+'</button>';
+ const action=(title,desc,pg,tab,ic,extra='')=>'<button type="button" class="v2-action v2-group-action" data-action="quick" data-page-target="'+pg+'" '+(tab?'data-tab="'+tab+'"':'')+' '+extra+'>'+icon(ic)+'<span><b>'+title+'</b><small>'+desc+'</small></span>'+icon('chevron')+'</button>';
  const group=(kind,title,desc,items)=>'<section class="v2-operation-group '+kind+'"><div class="v2-group-heading"><span class="v2-group-icon">'+icon(kind==='in'?'plus':'minus')+'</span><div><h3>'+title+'</h3><p>'+desc+'</p></div></div><div class="v2-group-actions">'+items.join('')+'</div></section>';
  return pageTitle('Mi caja','Elige una operación para comenzar.')+
   '<div class="v2-cash-hero"><div><div class="v2-hero-label">'+icon('check')+' TURNO ABIERTO · '+esc(s.operator)+'</div><small>Efectivo estimado en gaveta</small><strong>'+fmt(cash)+'</strong><span>Base '+fmt(s.base)+' · Abierta '+esc(dt(s.openedAt))+'</span></div><button type="button" data-action="goto-caja" class="v2-hero-link">Ver caja '+icon('arrow')+'</button></div>'+syncBadge()+

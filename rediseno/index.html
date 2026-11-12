@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#101c18" />
+  <meta name="color-scheme" content="light" />
+  <meta name="description" content="Arqueo Express: dos pantallas, doce flujos. Un prototipo local de caja con verificaciones por rol." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23101c18'/%3E%3Cpath d='M9 12h14M9 17h14M9 22h9' stroke='%23d9ae5f' stroke-width='2'/%3E%3C/svg%3E" />
+  <title>Arqueo Express · Rediseño</title>
+  <link rel="stylesheet" href="styles.css?v=11" />
+</head>
+<body>
+  <a class="skip" href="#main">Saltar al contenido</a>
+
+  <!-- Pantalla 1 · Acceso con PIN -->
+  <section class="gate" id="gate" aria-labelledby="gate-title">
+    <div class="gate-brand">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-name">Arqueo <em>Express</em></span>
+    </div>
+
+    <div class="gate-card">
+      <p class="eyebrow" id="gate-date">Caja 01 · Turno de la tarde</p>
+      <h1 id="gate-title">¿Quién abre la caja?</h1>
+      <div class="who-pick" id="gate-users" role="group" aria-label="Persona que entra"></div>
+
+      <div class="pin-block">
+        <div class="pin-label">
+          <span>PIN de 4 dígitos</span>
+          <span id="pin-for">Ana Beltrán</span>
+        </div>
+        <div class="pin-dots" id="pin-dots" role="status" aria-live="polite" aria-label="PIN vacío"></div>
+        <p class="gate-error" id="gate-error" role="alert"></p>
+      </div>
+
+      <div class="keypad" id="keypad" aria-label="Teclado numérico">
+        <button type="button" data-key="1">1</button>
+        <button type="button" data-key="2">2</button>
+        <button type="button" data-key="3">3</button>
+        <button type="button" data-key="4">4</button>
+        <button type="button" data-key="5">5</button>
+        <button type="button" data-key="6">6</button>
+        <button type="button" data-key="7">7</button>
+        <button type="button" data-key="8">8</button>
+        <button type="button" data-key="9">9</button>
+        <button type="button" class="key-quiet" data-key="clear">Borrar</button>
+        <button type="button" data-key="0">0</button>
+        <button type="button" class="key-enter" data-key="enter">Entrar</button>
+      </div>
+
+      <p class="gate-hint">Demo: cajera <b>1234</b> · encargado <b>4321</b></p>
+    </div>
+
+    <p class="gate-foot">Prototipo local · Los datos viven en este navegador</p>
+  </section>
+
+  <!-- Pantalla 2 · Mi caja -->
+  <div class="app" id="app" hidden></div>
+
+  <!-- Atajo flotante dentro de esta página (no es una ventana del sistema) -->
+  <div class="fab-wrap" id="fab-wrap" hidden>
+    <div class="fab-menu" id="fab-menu" hidden>
+      <div class="fab-head" id="fab-status"></div>
+      <div class="fab-actions">
+        <button type="button" data-quick="in"><span class="quick-ic in">+</span><b>Entrada</b><small>Venta o abono</small></button>
+        <button type="button" data-quick="out"><span class="quick-ic out">−</span><b>Salida</b><small>Compra o gasto</small></button>
+        <button type="button" data-quick="verify"><span class="quick-ic">✓</span><b>Verificar</b><small>Bandeja del turno</small></button>
+        <button type="button" data-quick="history"><span class="quick-ic">⌕</span><b>Comprobantes</b><small>Buscar en historial</small></button>
+      </div>
+      <p class="fab-foot">Atajo del prototipo · visible solo dentro de esta página</p>
+    </div>
+    <button class="fab" id="fab-toggle" type="button" aria-expanded="false" aria-controls="fab-menu" aria-label="Abrir acciones rápidas">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+  </div>
+
+  <!-- Host único de los 12 flujos modales -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-backdrop" data-mclose></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <header class="modal-head">
+        <div>
+          <p class="modal-kicker" id="modal-kicker"></p>
+          <h2 id="modal-title" tabindex="-1"></h2>
+        </div>
+        <button class="icon-btn modal-x" type="button" data-mclose aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+        </button>
+      </header>
+      <div class="modal-steps" id="modal-steps"></div>
+      <div class="modal-body" id="modal-body"></div>
+      <footer class="modal-foot" id="modal-foot"></footer>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="core.js?v=11"></script>
+  <script src="ui.js?v=11"></script>
+  <script src="flows.js?v=11"></script>
+  <script src="flows2.js?v=11"></script>
+  <script src="main.js?v=11"></script>
+</body>
+</html>

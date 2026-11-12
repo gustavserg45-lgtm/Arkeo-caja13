@@ -9,6 +9,7 @@ on:
       - 'tests/**'
       - '.github/workflows/test-v2.yml'
       - 'arqueo de caja/**'
+      - 'rediseno/**'
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,6 +27,11 @@ jobs:
           node --check "arqueo de caja/cashier-v2.js"
           node --check "arqueo de caja/tests/v2-smoke.cjs"
           node --check "arqueo de caja/tests/static-contract.cjs"
+          node --check "rediseno/core.js"
+          node --check "rediseno/ui.js"
+          node --check "rediseno/flows.js"
+          node --check "rediseno/flows2.js"
+          node --check "rediseno/main.js"
       - name: Instalar DOM de pruebas
         run: npm install --no-save --no-package-lock jsdom@26
       - name: Ejecutar flujo real simulado
