@@ -39,26 +39,18 @@ function recentParties(kind) {
 function conceptStep(kind, draft) {
   const list = CONCEPTS[kind];
   return `
-    <p class="modal-lede">¿Qué pasó? Elige el tipo y ajústalo con tus palabras. No necesitas escribir de cero.</p>
+    <p class="modal-lede">Elegí una opción. Después te vamos a pedir únicamente los datos necesarios para ese caso.</p>
     <div class="choice-grid" role="group" aria-label="Tipo de movimiento">
       ${list.map((c) => `<button class="choice" type="button" data-act="concept" data-value="${c.id}" aria-pressed="${draft.category === c.id}">
         <b>${esc(c.label)}</b><small>${esc(c.hint)}</small>
       </button>`).join("")}
     </div>
-    <div class="form-block">
-      <label class="field"><span>Detalle</span>
-        <input data-field="conceptText" maxlength="80" value="${esc(draft.conceptText || "")}" placeholder="Ej. ${esc(FREQUENT_CONCEPTS[kind][0])}" data-autofocus />
-      </label>
-      <div class="chip-row">
-        ${FREQUENT_CONCEPTS[kind].map((c) => `<button class="chip" type="button" data-act="concept-text" data-value="${esc(c)}">${esc(c)}</button>`).join("")}
-      </div>
-      <div class="form-block">${partyField(kind, draft)}</div>
-    </div>`;
+    <div class="flow-tip">${ic(kind === "in" ? "plus" : "minus", 16)}<span><b>${kind === "in" ? "Primero el movimiento" : "Primero el motivo"}</b><small>Los detalles opcionales aparecen más adelante si hacen falta.</small></span></div>`;
 }
 
-function methodStep(draft) {
+function methodStep(draft, kind = "in") {
   return `
-    <p class="modal-lede">El importe manda. El método define si el dinero entra a la gaveta o si queda pendiente de verificación.</p>
+    <p class="modal-lede">${kind === "in" ? "¿Cuánto dinero recibiste y cómo llegó?" : "¿Cuánto dinero entregaste y cómo salió?"}</p>
     ${moneyInput(draft.amount)}
     <p class="amount-help">Escribe el valor sin puntos ni comas.</p>
     <div class="methods" role="group" aria-label="Método de pago">
@@ -274,11 +266,11 @@ FLOWS.open = {
 
 FLOWS.in = {
   n: "02", kicker: "Entrada", title: "Entrada de dinero",
-  steps: (d) => ["Concepto", "Importe y método", ...(methodIsDigital(d.method) ? ["Soporte"] : []), "Registrar"],
+  steps: (d) => ["Tipo", "Monto y método", ...(methodIsDigital(d.method) ? ["Soporte"] : []), "Confirmar"],
   draft: () => ({ category: "venta", conceptText: "Venta mostrador", party: "Mostrador", amount: 0, method: "efectivo", note: "", reference: "", evidence: [] }),
   render(step, d) {
     if (step === 0) return conceptStep("in", d);
-    if (step === 1) return methodStep(d);
+    if (step === 1) return methodStep(d, "in");
     if (step === 2 && methodIsDigital(d.method)) {
       return evidencePicker(d) + `<p class="form-note">Sin soporte, el movimiento queda en la bandeja del encargado marcado como "sin soporte".</p>`;
     }
@@ -295,10 +287,7 @@ FLOWS.in = {
   },
   collect(m) {
     const d = m.draft;
-    if (m.step === 0) {
-      d.conceptText = readField("conceptText") || CONCEPT_BY_ID[d.category]?.label;
-      d.party = readField("party");
-    } else if (m.step === 1) {
+    if (m.step === 1) {
       d.amount = readAmount();
       d.note = readField("note");
       if (!d.amount) { toast("Escribe un importe mayor que cero.", "error"); return false; }
@@ -338,12 +327,12 @@ FLOWS.in = {
 
 FLOWS.out = {
   n: "03", kicker: "Salida", title: "Salida de dinero",
-  steps: (d) => ["Concepto", "Importe y método", "Beneficiario y soporte", ...(methodIsDigital(d.method) ? ["Autorización"] : []), "Registrar"],
+  steps: (d) => ["Motivo", "Monto y método", "Destinatario" , ...(methodIsDigital(d.method) ? ["Autorización"] : []), "Confirmar"],
   draft: () => ({ category: "compra", conceptText: "", party: "", amount: 0, method: "efectivo", note: "", reference: "", evidence: [], authMode: "pending" }),
   enter(m) { m.draft.authMode = isManager() ? "now" : "pending"; },
   render(step, d) {
     if (step === 0) return conceptStep("out", d);
-    if (step === 1) return methodStep(d);
+    if (step === 1) return methodStep(d, "out");
     if (step === 2) {
       return `<p class="modal-lede">¿A quién se le paga? Si el pago es digital, adjunta el soporte de la operación.</p>
         ${partyField("out", d)}
@@ -378,10 +367,7 @@ FLOWS.out = {
   },
   collect(m) {
     const d = m.draft;
-    if (m.step === 0) {
-      d.conceptText = readField("conceptText") || CONCEPT_BY_ID[d.category]?.label;
-      d.party = readField("party");
-    } else if (m.step === 1) {
+    if (m.step === 1) {
       d.amount = readAmount();
       d.note = readField("note");
       if (!d.amount) { toast("Escribe un importe mayor que cero.", "error"); return false; }

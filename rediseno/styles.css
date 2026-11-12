@@ -1636,6 +1636,20 @@ body.modal-open { overflow: hidden; }
 }
 .modal-lede b { color: var(--ink); }
 .modal-body .form-block { margin-top: 20px; }
+.flow-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 11px 12px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  background: #f7f8f3;
+  color: var(--brass-ink);
+}
+.flow-tip svg { flex: none; margin-top: 1px; }
+.flow-tip b { display: block; font-size: 11.5px; color: var(--ink); }
+.flow-tip small { display: block; margin-top: 2px; font-size: 10.5px; color: var(--muted); line-height: 1.45; }
 
 .btn-danger { background: var(--out); border-color: var(--out); color: #fff; }
 .btn-danger:hover { background: #8f3d26; border-color: #8f3d26; }
